@@ -88,25 +88,14 @@ struct WelcomeStep: View {
     let onNext: () -> Void
     
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: DesignSystem.Spacing.extraLarge) {
             // Hero Icon
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 96, height: 96)
-                    .opacity(0.1)
-                
-                Image(systemName: "checkmark.circle.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 64, height: 64)
-                    .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
-            }
+            BrandIcon(icon: "checkmark.circle.fill", size: 96)
+                .shadow(color: DesignSystem.Colors.brandPrimary.opacity(0.3), radius: 10, x: 0, y: 5)
             
-            VStack(spacing: 12) {
+            VStack(spacing: DesignSystem.Spacing.small) {
                 Text("Welcome to ReviewBar")
-                    .font(.largeTitle.weight(.bold))
+                    .brandTitle()
                 
                 Text("Your AI-powered production code review assistant.")
                     .font(.title3)
@@ -114,7 +103,7 @@ struct WelcomeStep: View {
                     .multilineTextAlignment(.center)
             }
             
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.medium) {
                 FeatureRow(icon: "brain.head.profile", title: "AI Analysis", description: "Catch bugs and get suggestions using Claude, Gemini, or OpenAI.")
                 FeatureRow(icon: "terminal", title: "CLI Integration", description: "Use your existing CLI tools without needing API keys.")
                 FeatureRow(icon: "bell.badge", title: "Smart Notifications", description: "Get notified when your reviews are ready.")
@@ -128,9 +117,9 @@ struct WelcomeStep: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-            .tint(.accentColor)
+            .tint(DesignSystem.Colors.brandPrimary)
         }
-        .padding(40)
+        .padding(DesignSystem.Spacing.extraLarge + DesignSystem.Spacing.small)
     }
 }
 
@@ -284,25 +273,14 @@ struct CompletionStep: View {
     let onFinish: () -> Void
     
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: DesignSystem.Spacing.extraLarge) {
             // Hero Icon
-            ZStack {
-                Circle()
-                    .fill(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .frame(width: 96, height: 96)
-                    .opacity(0.1)
-                
-                Image(systemName: "party.popper.fill")
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 64, height: 64)
-                    .foregroundStyle(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
-                    .shadow(color: .orange.opacity(0.3), radius: 10, x: 0, y: 5)
-            }
+            BrandIcon(icon: "party.popper.fill", gradient: DesignSystem.Colors.warningGradient, size: 96)
+                .shadow(color: Color.orange.opacity(0.3), radius: 10, x: 0, y: 5)
             
-            VStack(spacing: 12) {
+            VStack(spacing: DesignSystem.Spacing.small) {
                 Text("You're All Set!")
-                    .font(.largeTitle.weight(.bold))
+                    .brandTitle()
                 
                 Text("ReviewBar is now running in your menu bar.")
                     .font(.title3)
@@ -313,7 +291,7 @@ struct CompletionStep: View {
                 .font(.callout)
                 .padding()
                 .background(.regularMaterial)
-                .cornerRadius(12)
+                .cornerRadius(DesignSystem.Radius.medium)
             
             Spacer()
             
@@ -323,9 +301,9 @@ struct CompletionStep: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .keyboardShortcut(.defaultAction)
-            .tint(.accentColor)
+            .tint(DesignSystem.Colors.brandPrimary)
         }
-        .padding(40)
+        .padding(DesignSystem.Spacing.extraLarge + DesignSystem.Spacing.small)
     }
 }
 
@@ -335,10 +313,10 @@ struct FeatureRow: View {
     let description: String
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: DesignSystem.Spacing.medium) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundColor(.accentColor)
+                .foregroundColor(DesignSystem.Colors.brandPrimary)
                 .frame(width: 32)
             
             VStack(alignment: .leading, spacing: 2) {

@@ -48,6 +48,14 @@ public struct ReviewModalView: View {
                         PositivesSection(positives: result.positives)
                     case .skills:
                         SkillsSection(results: result.skillResults)
+                    case .diff:
+                        if let diff = result.diff {
+                            DiffView(diff: diff)
+                        } else {
+                            EmptyStateView(icon: "doc.text", title: "No Diff Available", subtitle: "Diff content was not captured for this review.")
+                        }
+                    case .chat:
+                        AIChatView(reviewResult: result)
                     }
                 }
                 .padding()
@@ -145,9 +153,9 @@ struct RecommendationBadge: View {
         .font(.caption.weight(.semibold))
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .background(backgroundColor)
+        .background(recommendation.color)
         .foregroundColor(.white)
-        .cornerRadius(8)
+        .cornerRadius(DesignSystem.Radius.small)
     }
     
     private var iconName: String {
@@ -158,13 +166,6 @@ struct RecommendationBadge: View {
         }
     }
     
-    private var backgroundColor: Color {
-        switch recommendation {
-        case .approve: return .green
-        case .requestChanges: return .red
-        case .comment: return .blue
-        }
-    }
 }
 
 // MARK: - Summary Card
@@ -218,9 +219,8 @@ struct SummaryCard: View {
                 .font(.body)
                 .foregroundColor(.primary)
         }
-        .padding()
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .padding(DesignSystem.Spacing.medium)
+        .glassCard()
     }
     
     private var confidenceColor: Color {
@@ -259,6 +259,8 @@ enum ReviewTab: String, CaseIterable {
     case suggestions = "Suggestions"
     case positives = "Positives"
     case skills = "Skills"
+    case diff = "Diff"
+    case chat = "Ask AI"
 }
 
 struct TabBar: View {
@@ -287,6 +289,8 @@ struct TabBar: View {
         case .suggestions: return result.suggestions.count
         case .positives: return result.positives.count
         case .skills: return result.skillResults.count
+        case .diff: return 0 // No count for diff
+        case .chat: return 0 // No count for chat
         }
     }
 }
@@ -314,11 +318,11 @@ struct TabButton: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(isSelected ? Color.accentColor.opacity(0.2) : Color.clear)
-            .cornerRadius(8)
+            .background(isSelected ? Color.accentColor.opacity(0.1) : Color.clear)
+            .cornerRadius(DesignSystem.Radius.small)
         }
         .buttonStyle(.plain)
-        .foregroundColor(isSelected ? .accentColor : .secondary)
+        .foregroundColor(isSelected ? DesignSystem.Colors.brandPrimary : .secondary)
     }
 }
 
@@ -386,15 +390,14 @@ struct IssueRow: View {
                 DisclosureGroup("Suggested Fix", isExpanded: $isExpanded) {
                     Text(fix)
                         .font(.system(.caption, design: .monospaced))
-                        .padding(8)
+                        .padding(DesignSystem.Radius.small)
                         .background(Color(.textBackgroundColor))
-                        .cornerRadius(8)
+                        .cornerRadius(DesignSystem.Radius.small)
                 }
             }
         }
-        .padding()
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .padding(DesignSystem.Spacing.medium)
+        .glassCard()
     }
 }
 
@@ -406,9 +409,9 @@ struct SeverityBadge: View {
             .font(.caption.weight(.semibold))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(color.opacity(0.2))
+            .background(color.opacity(0.15))
             .foregroundColor(color)
-            .cornerRadius(6)
+            .cornerRadius(DesignSystem.Radius.small)
     }
     
     private var color: Color {
@@ -428,8 +431,8 @@ struct CategoryBadge: View {
             .font(.caption)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(Color.gray.opacity(0.2))
-            .cornerRadius(6)
+            .background(Color.gray.opacity(0.1))
+            .cornerRadius(DesignSystem.Radius.small)
     }
 }
 
@@ -476,14 +479,13 @@ struct SuggestionRow: View {
             if let code = suggestion.suggestedCode {
                 Text(code)
                     .font(.system(.caption, design: .monospaced))
-                    .padding(8)
+                    .padding(DesignSystem.Radius.small)
                     .background(Color(.textBackgroundColor))
-                    .cornerRadius(8)
+                    .cornerRadius(DesignSystem.Radius.small)
             }
         }
-        .padding()
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .padding(DesignSystem.Spacing.medium)
+        .glassCard()
     }
 }
 
@@ -523,9 +525,8 @@ struct PositiveRow: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding()
-        .background(Color.green.opacity(0.1))
-        .cornerRadius(12)
+        .padding(DesignSystem.Spacing.medium)
+        .glassCard(tintColor: .green)
     }
 }
 
@@ -577,9 +578,8 @@ struct SkillResultRow: View {
                 }
             }
         }
-        .padding()
-        .background(Color(.controlBackgroundColor))
-        .cornerRadius(12)
+        .padding(DesignSystem.Spacing.medium)
+        .glassCard()
     }
 }
 

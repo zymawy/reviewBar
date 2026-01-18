@@ -1,0 +1,95 @@
+{
+  "": {
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/master.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Agents/CLILLMProvider.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLILLMProvider.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLILLMProvider.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLILLMProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLILLMProvider.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Agents/CLITool.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLITool.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLITool.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLITool~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/CLITool.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Agents/LLMProvider.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/LLMProvider.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/LLMProvider.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/LLMProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/LLMProvider.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Models/Models.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/Models.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/Models.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/Models~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/Models.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Providers/GitHub/GitHubProvider.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitHubProvider.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitHubProvider.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitHubProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitHubProvider.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Providers/GitProvider.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitProvider.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitProvider.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/GitProvider.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/ReviewBarCore.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewBarCore.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewBarCore.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewBarCore~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewBarCore.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/ReviewEngine/DiffParser.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DiffParser.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DiffParser.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DiffParser~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DiffParser.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/ReviewEngine/ReviewAnalyzer.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewAnalyzer.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewAnalyzer.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewAnalyzer~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewAnalyzer.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Services/PRCloneManager.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/PRCloneManager.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/PRCloneManager.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/PRCloneManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/PRCloneManager.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Skills/DefaultSkills.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DefaultSkills.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DefaultSkills.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DefaultSkills~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/DefaultSkills.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Skills/MCPBridge.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/MCPBridge.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/MCPBridge.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/MCPBridge~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/MCPBridge.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Skills/SkillFile.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillFile.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillFile.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillFile~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillFile.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Skills/SkillLoader.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillLoader.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillLoader.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillLoader~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillLoader.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Sources/ReviewBarCore/Skills/SkillValidator.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillValidator.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillValidator.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillValidator~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/SkillValidator.swiftdeps"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "object" : {
+    "artifacts" : [
+      {
+        "kind" : "xcframework",
+        "packageRef" : {
+          "identity" : "sparkle",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/sparkle-project/Sparkle.git",
+          "name" : "Sparkle"
+        },
+        "path" : "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/artifacts/sparkle/Sparkle/Sparkle.xcframework",
+        "source" : {
+          "checksum" : "995f913935fe903d50b3be5344fc52a638f56b39ef7984bf7a44244786d28638",
+          "type" : "remote",
+          "url" : "https://github.com/sparkle-project/Sparkle/releases/download/2.8.1/Sparkle-for-Swift-Package-Manager.zip"
+        },
+        "targetName" : "Sparkle"
+      }
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "keychainaccess",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/kishikawakatsumi/KeychainAccess.git",
+          "name" : "KeychainAccess"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "84e546727d66f1adc5439debad16270d0fdd04e7",
+            "version" : "4.2.2"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "KeychainAccess"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "sparkle",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/sparkle-project/Sparkle.git",
+          "name" : "Sparkle"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "5581748cef2bae787496fe6d61139aebe0a451f6",
+            "version" : "2.8.1"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Sparkle"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "swift-argument-parser",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/apple/swift-argument-parser.git",
+          "name" : "swift-argument-parser"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "c5d11a805e765f52ba34ec7284bd4fcd6ba68615",
+            "version" : "1.7.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "swift-argument-parser"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "yams",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/jpsim/Yams.git",
+          "name" : "Yams"
+        },
+        "state" : {
+          "checkoutState" : {
+            "revision" : "3d6871d5b4a5cd519adf233fbb576e0a2af71c17",
+            "version" : "5.4.0"
+          },
+          "name" : "sourceControlCheckout"
+        },
+        "subpath" : "Yams"
+      }
+    ]
+  },
+  "version" : 6
+}

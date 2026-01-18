@@ -1,5 +1,6 @@
 import SwiftUI
 import ReviewBarCore
+import Charts
 
 /// Dashboard view showing all pending reviews and recent activity
 struct DashboardView: View {
@@ -120,10 +121,12 @@ struct DashboardView: View {
     }
     
     private func startReview(_ request: ReviewRequest) {
+        HapticManager.trigger(.generic)
         Task {
             do {
                 _ = try await reviewStore.startReview(request)
             } catch {
+                HapticManager.error()
                 print("Failed to start review: \(error)")
             }
         }
@@ -173,50 +176,90 @@ struct DashboardToolbar: View {
     @Binding var filterRepository: String?
     @Binding var sortOrder: SortOrder
     let onRefresh: () -> Void
+    @EnvironmentObject var reviewStore: ReviewStore
     
     var body: some View {
-        HStack {
-            // Search
+        VStack(spacing: 0) {
             HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.secondary)
-                TextField("Search PRs...", text: $searchText)
-                    .textFieldStyle(.plain)
-                
-                if !searchText.isEmpty {
-                    Button {
-                        searchText = ""
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.secondary)
+                // Search
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.secondary)
+                    TextField("Search PRs...", text: $searchText)
+                        .textFieldStyle(.plain)
+                    
+                    if !searchText.isEmpty {
+                        Button {
+                            searchText = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
-            }
-            .padding(8)
-            .background(Color(.controlBackgroundColor))
-            .cornerRadius(8)
-            .frame(maxWidth: 300)
-            
-            Spacer()
-            
-            // Sort
-            Picker("Sort", selection: $sortOrder) {
-                ForEach(SortOrder.allCases, id: \.self) { order in
-                    Text(order.rawValue).tag(order)
+                .padding(8)
+                .background(Color.primary.opacity(0.05))
+                .cornerRadius(DesignSystem.Radius.small)
+                .frame(maxWidth: 300)
+                
+                Spacer()
+                
+                // Sort
+                Picker("Sort", selection: $sortOrder) {
+                    ForEach(SortOrder.allCases, id: \.self) { order in
+                        Text(order.rawValue).tag(order)
+                    }
                 }
+                .frame(width: 150)
+                
+                // Refresh
+                Button {
+                    HapticManager.trigger(.generic)
+                    onRefresh()
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .help("Refresh")
             }
-            .frame(width: 150)
+            .padding()
             
-            // Refresh
-            Button {
-                onRefresh()
-            } label: {
-                Image(systemName: "arrow.clockwise")
+            if reviewStore.isReviewing {
+                ReviewProgressBar()
+                    .padding(.horizontal)
+                    .transition(.move(edge: .top).combined(with: .opacity))
             }
-            .help("Refresh")
         }
-        .padding()
+    }
+}
+
+struct ReviewProgressBar: View {
+    @State private var progress: Double = 0.3
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("Analyzing codebase...")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Text("\(Int(progress * 100))%")
+                    .font(.caption.monospacedDigit())
+                    .foregroundColor(.secondary)
+            }
+            
+            ProgressView(value: progress)
+                .progressViewStyle(.linear)
+                .tint(DesignSystem.Colors.brandPrimary)
+        }
+        .padding(8)
+        .background(DesignSystem.Colors.brandPrimary.opacity(0.05))
+        .cornerRadius(DesignSystem.Radius.small)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2.0).repeatForever()) {
+                progress = 0.9
+            }
+        }
     }
 }
 
@@ -259,7 +302,7 @@ struct PendingReviewCard: View {
     @State private var isHovering = false
     
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: DesignSystem.Spacing.medium) {
             // Priority indicator with glow
             Circle()
                 .fill(priorityColor)
@@ -280,8 +323,7 @@ struct PendingReviewCard: View {
                     Label("@\(request.author.login)", systemImage: "person")
                     Label(request.createdAt.relativeDescription ?? "Unknown", systemImage: "clock")
                 }
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .brandSecondary()
                 .symbolRenderingMode(.hierarchical)
             }
             
@@ -301,23 +343,14 @@ struct PendingReviewCard: View {
                         onStartReview()
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(.accentColor)
-                    .shadow(color: .accentColor.opacity(0.3), radius: 2)
+                    .tint(DesignSystem.Colors.brandPrimary)
                 }
                 .transition(.opacity.combined(with: .move(edge: .trailing)).animation(.snappy))
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(.regularMaterial)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(isHovering ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
-        )
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(isHovering ? 0.15 : 0.05), radius: 8, x: 0, y: isHovering ? 4 : 2)
-        .scaleEffect(isHovering ? 1.01 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
+        .padding(.horizontal, DesignSystem.Spacing.medium)
+        .padding(.vertical, DesignSystem.Spacing.medium - 4)
+        .glassCard(isHovered: isHovering)
         .onHover { hovering in
             isHovering = hovering
         }
@@ -367,7 +400,7 @@ struct RecentResultCard: View {
         Button {
             showModal = true
         } label: {
-            HStack(spacing: 16) {
+            HStack(spacing: DesignSystem.Spacing.medium) {
                 // Recommendation badge with glow
                 Image(systemName: recommendationIcon)
                     .font(.title2)
@@ -382,13 +415,12 @@ struct RecentResultCard: View {
                         .lineLimit(1)
                         .foregroundColor(.primary)
                     
-                    HStack(spacing: 12) {
+                    HStack(spacing: DesignSystem.Spacing.small) {
                         Label(result.pullRequest.repository, systemImage: "folder")
                         Label("\(result.issues.count) issues", systemImage: "exclamationmark.circle")
                         Label(result.analyzedAt.relativeDescription ?? "Just now", systemImage: "clock")
                     }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .brandSecondary()
                     .symbolRenderingMode(.hierarchical)
                 }
                 
@@ -402,29 +434,21 @@ struct RecentResultCard: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(recommendationColor.opacity(0.1))
-                        .cornerRadius(6)
+                        .cornerRadius(DesignSystem.Radius.small)
                     
                     Text("\(Int(result.confidence * 100))% confidence")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(.regularMaterial)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isHovering ? recommendationColor.opacity(0.3) : Color.clear, lineWidth: 1)
-            )
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(isHovering ? 0.15 : 0.05), radius: 8, x: 0, y: isHovering ? 4 : 2)
-            .scaleEffect(isHovering ? 1.01 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
-            .onHover { hovering in
-                isHovering = hovering
-            }
+            .padding(.horizontal, DesignSystem.Spacing.medium)
+            .padding(.vertical, DesignSystem.Spacing.medium - 4)
+            .glassCard(isHovered: isHovering, tintColor: recommendationColor)
         }
         .buttonStyle(.plain)
+        .onHover { hovering in
+            isHovering = hovering
+        }
         .sheet(isPresented: $showModal) {
             ReviewModalView(result: result)
         }
@@ -446,42 +470,72 @@ struct RecentResultCard: View {
 // MARK: - Analytics View
 
 struct AnalyticsView: View {
+    @StateObject private var analytics = AnalyticsService.shared
+    
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Analytics")
-                .font(.largeTitle.weight(.bold))
-            
-            Text("Coming soon!")
-                .foregroundColor(.secondary)
-            
-            // Placeholder for future analytics
-            HStack(spacing: 20) {
-                AnalyticCard(
-                    title: "Reviews This Week",
-                    value: "12",
-                    trend: "+3",
-                    color: .blue
-                )
+        ScrollView {
+            VStack(alignment: .leading, spacing: DesignSystem.Spacing.large) {
+                Text("Performance Overview")
+                    .brandTitle()
                 
-                AnalyticCard(
-                    title: "Avg Review Time",
-                    value: "2.4s",
-                    trend: "-0.5s",
-                    color: .green
-                )
+                // Top Metrics
+                HStack(spacing: DesignSystem.Spacing.medium) {
+                    AnalyticCard(title: "Total Reviews", value: "\(analytics.totalReviews)", trend: "+12%", color: .blue)
+                    AnalyticCard(title: "Avg Confidence", value: "\(Int(analytics.averageConfidence * 100))%", trend: "+5%", color: .green)
+                    AnalyticCard(title: "Issues Found", value: "\(analytics.totalIssuesFound)", trend: "-8%", color: .orange)
+                }
                 
-                AnalyticCard(
-                    title: "Issues Found",
-                    value: "28",
-                    trend: "+5",
-                    color: .orange
-                )
+                // Review Activity Chart
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.medium) {
+                    Text("Review Activity")
+                        .font(.headline)
+                    
+                    if analytics.chartData.isEmpty {
+                        EmptyStateView(icon: "chart.bar", title: "No Data Yet", subtitle: "Review activity will appear here once you start analyzing PRs.")
+                            .frame(height: 200)
+                    } else {
+                        Chart(analytics.chartData) { item in
+                            BarMark(
+                                x: .value("Date", item.date, unit: .day),
+                                y: .value("Count", item.count)
+                            )
+                            .foregroundStyle(DesignSystem.Colors.brandGradient)
+                            .cornerRadius(DesignSystem.Radius.small)
+                        }
+                        .frame(height: 200)
+                        .chartXAxis {
+                            AxisMarks(values: .stride(by: .day)) { _ in
+                                AxisGridLine()
+                                AxisValueLabel(format: .dateTime.day().month())
+                            }
+                        }
+                    }
+                }
+                .padding(DesignSystem.Spacing.medium)
+                .glassCard()
+                
+                // Issues by Category (Placeholder for now)
+                VStack(alignment: .leading, spacing: DesignSystem.Spacing.medium) {
+                    Text("Top Issue Categories")
+                        .font(.headline)
+                    
+                    Chart {
+                        BarMark(x: .value("Category", "Security"), y: .value("Count", 5))
+                            .foregroundStyle(.red.gradient)
+                        BarMark(x: .value("Category", "Logic"), y: .value("Count", 12))
+                            .foregroundStyle(.orange.gradient)
+                        BarMark(x: .value("Category", "Style"), y: .value("Count", 8))
+                            .foregroundStyle(.blue.gradient)
+                        BarMark(x: .value("Category", "Performance"), y: .value("Count", 3))
+                            .foregroundStyle(.green.gradient)
+                    }
+                    .frame(height: 150)
+                }
+                .padding(DesignSystem.Spacing.medium)
+                .glassCard()
             }
             .padding()
-            
-            Spacer()
         }
-        .padding()
     }
 }
 
@@ -492,7 +546,7 @@ struct AnalyticCard: View {
     let color: Color
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: DesignSystem.Spacing.small) {
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -506,9 +560,9 @@ struct AnalyticCard: View {
                 .foregroundColor(trend.hasPrefix("-") ? .green : .orange)
         }
         .frame(maxWidth: .infinity)
-        .padding()
+        .padding(DesignSystem.Spacing.medium)
         .background(color.opacity(0.1))
-        .cornerRadius(16)
+        .cornerRadius(DesignSystem.Radius.medium)
     }
 }
 

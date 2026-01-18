@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarTests.build/master.swiftdeps"
+  },
+  "/Users/zymawy/Code/CodexBar/ReviewBar/Tests/ReviewBarTests/ReviewBarTests.swift": {
+    "dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarTests.build/ReviewBarTests.d",
+    "object": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarTests.build/ReviewBarTests.swift.o",
+    "swiftmodule": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarTests.build/ReviewBarTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarTests.build/ReviewBarTests.swiftdeps"
+  }
+}

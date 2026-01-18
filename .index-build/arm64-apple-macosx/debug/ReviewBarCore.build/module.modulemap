@@ -1,0 +1,4 @@
+module ReviewBarCore {
+    header "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarCore.build/ReviewBarCore-Swift.h"
+    requires objc
+}

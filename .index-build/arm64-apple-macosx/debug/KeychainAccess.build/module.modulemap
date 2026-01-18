@@ -1,0 +1,4 @@
+module KeychainAccess {
+    header "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/KeychainAccess.build/KeychainAccess-Swift.h"
+    requires objc
+}

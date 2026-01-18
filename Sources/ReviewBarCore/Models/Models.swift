@@ -161,6 +161,7 @@ public struct ReviewResult: Sendable, Codable, Identifiable {
     
     public let skillResults: [SkillResult]
     public let tokenUsage: TokenUsage?
+    public let diff: String?
     
     public init(
         id: UUID = UUID(),
@@ -174,7 +175,8 @@ public struct ReviewResult: Sendable, Codable, Identifiable {
         suggestions: [ReviewSuggestion],
         positives: [ReviewPositive],
         skillResults: [SkillResult] = [],
-        tokenUsage: TokenUsage? = nil
+        tokenUsage: TokenUsage? = nil,
+        diff: String? = nil
     ) {
         self.id = id
         self.pullRequest = pullRequest
@@ -188,6 +190,7 @@ public struct ReviewResult: Sendable, Codable, Identifiable {
         self.positives = positives
         self.skillResults = skillResults
         self.tokenUsage = tokenUsage
+        self.diff = diff
     }
 }
 
