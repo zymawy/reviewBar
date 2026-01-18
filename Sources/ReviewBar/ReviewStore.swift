@@ -170,7 +170,9 @@ public final class ReviewStore: ObservableObject {
                     repo: request.repository.name,
                     prNumber: request.number
                 )
-                log("Cloned to \(clonedDir!.path)", level: .success)
+                if let dir = clonedDir {
+                    log("Cloned to \(dir.path)", level: .success)
+                }
             }
             
             // Analyze

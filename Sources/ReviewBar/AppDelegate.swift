@@ -103,7 +103,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // Placeholder for Gemini API (use OpenAI-compatible endpoint)
             llmProvider = OpenAIProvider(apiKey: apiKey) 
         case .ollama:
-            llmProvider = OllamaProvider(baseURL: URL(string: "http://localhost:11434")!)
+            guard let ollamaURL = URL(string: "http://localhost:11434") else {
+                llmProvider = ClaudeProvider(apiKey: "")
+                break
+            }
+            llmProvider = OllamaProvider(baseURL: ollamaURL)
         // CLI-based providers
         case .claudeCode:
             llmProvider = CLILLMProvider(tool: .claudeCode)
@@ -115,9 +119,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         // 3. Skills
         // Install default skills
-        let skillsDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-            .appendingPathComponent("ReviewBar/skills")
-        try? DefaultSkills.install(to: skillsDir)
+        if let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            let skillsDir = appSupportDir.appendingPathComponent("ReviewBar/skills")
+            try? DefaultSkills.install(to: skillsDir)
+        }
         
         let mcpBridge = MCPBridge()
         

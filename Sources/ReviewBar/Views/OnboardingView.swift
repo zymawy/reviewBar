@@ -150,7 +150,9 @@ struct GitHubSetupStep: View {
             .frame(maxWidth: 300)
             
             HStack(spacing: 12) {
-                Link("Generate Token", destination: URL(string: "https://github.com/settings/tokens/new?scopes=repo,read:user")!)
+                if let tokenURL = URL(string: "https://github.com/settings/tokens/new?scopes=repo,read:user") {
+                    Link("Generate Token", destination: tokenURL)
+                }
                 
                 Button("Paste from Clipboard") {
                    if let clipboard = NSPasteboard.general.string(forType: .string) {

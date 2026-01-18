@@ -180,8 +180,10 @@ struct ProvidersPane: View {
                         settings.gitHubToken = newValue.isEmpty ? nil : newValue
                     }
                     
-                    Link("Create a token on GitHub →", destination: URL(string: "https://github.com/settings/tokens/new?scopes=repo,read:user")!)
-                        .font(.caption)
+                    if let url = URL(string: "https://github.com/settings/tokens/new?scopes=repo,read:user") {
+                        Link("Create a token on GitHub →", destination: url)
+                            .font(.caption)
+                    }
                 }
             }
             
@@ -362,8 +364,10 @@ struct LLMPane: View {
                     Text("Ollama runs locally - no API key needed")
                         .foregroundColor(.secondary)
                     
-                    Link("Install Ollama →", destination: URL(string: "https://ollama.ai")!)
-                        .font(.caption)
+                    if let ollamaURL = URL(string: "https://ollama.ai") {
+                        Link("Install Ollama →", destination: ollamaURL)
+                            .font(.caption)
+                    }
                 }
             } else if settings.llmProvider.isCLI {
                 Section("CLI Authentication") {
@@ -432,12 +436,11 @@ struct LLMPane: View {
             }
         }
         
-        guard foundPath != nil else {
+        guard let foundPath else {
             print("CLI detection: \(command) not found in common paths")
             return false
         }
-        
-        print("CLI detection: Found \(command) at \(foundPath!)")
+        print("CLI detection: Found \(command) at \(foundPath)")
         
         // For now, skip auth check - if the binary exists, assume it's usable
         // The actual auth will be verified when the CLI is invoked
@@ -490,14 +493,20 @@ struct LLMPane: View {
     private var apiKeyHelpLink: some View {
         switch settings.llmProvider {
         case .claude:
-            Link("Get an Anthropic API key →", destination: URL(string: "https://console.anthropic.com/account/keys")!)
-                .font(.caption)
+            if let url = URL(string: "https://console.anthropic.com/account/keys") {
+                Link("Get an Anthropic API key →", destination: url)
+                    .font(.caption)
+            }
         case .openAI:
-            Link("Get an OpenAI API key →", destination: URL(string: "https://platform.openai.com/api-keys")!)
-                .font(.caption)
+            if let url = URL(string: "https://platform.openai.com/api-keys") {
+                Link("Get an OpenAI API key →", destination: url)
+                    .font(.caption)
+            }
         case .gemini:
-            Link("Get a Google AI API key →", destination: URL(string: "https://makersuite.google.com/app/apikey")!)
-                .font(.caption)
+            if let url = URL(string: "https://makersuite.google.com/app/apikey") {
+                Link("Get a Google AI API key →", destination: url)
+                    .font(.caption)
+            }
         default:
             EmptyView()
         }
@@ -536,8 +545,8 @@ struct SkillsPane: View {
             
             Section {
                 Button("Open Skills Folder") {
-                    let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-                        .appendingPathComponent("ReviewBar/skills")
+                    guard let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first else { return }
+                    let url = appSupport.appendingPathComponent("ReviewBar/skills")
                     
                     try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
                     NSWorkspace.shared.open(url)
@@ -553,8 +562,10 @@ struct SkillsPane: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Link("Learn more about creating skills →", destination: URL(string: "https://github.com/reviewbar/docs/skills")!)
-                    .font(.caption)
+                if let docsURL = URL(string: "https://github.com/reviewbar/docs/skills") {
+                    Link("Learn more about creating skills →", destination: docsURL)
+                        .font(.caption)
+                }
             }
         }
         .formStyle(.grouped)
