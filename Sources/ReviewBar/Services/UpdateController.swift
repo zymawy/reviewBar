@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import Sparkle
 
 /// Manages Sparkle auto-updates
@@ -6,16 +7,23 @@ import Sparkle
 final class UpdateController: ObservableObject {
     static let shared = UpdateController()
     
-    private let updaterController: SPUStandardUpdaterController
+    private var updaterController: SPUStandardUpdaterController?
     
     // Publish available updates so UI can react
-    @Published var canCheckForUpdates = true
+    @Published var canCheckForUpdates = false
+    @Published var isConfigured = false
     
     init() {
-        // Initialize Sparkle
-        // Note: Sparkle requires Info.plist keys to be set:
+        // Sparkle requires Info.plist keys:
         // - SUFeedURL
         // - SUPublicEDKey
+        // Only initialize if we're in a proper app bundle
+        
+        guard Bundle.main.bundleIdentifier != nil,
+              Bundle.main.infoDictionary?["SUFeedURL"] != nil else {
+            print("UpdateController: Running in dev mode (no SUFeedURL). Updates disabled.")
+            return
+        }
         
         self.updaterController = SPUStandardUpdaterController(
             startingUpdater: true,
@@ -23,30 +31,37 @@ final class UpdateController: ObservableObject {
             userDriverDelegate: nil
         )
         
+        self.isConfigured = true
+        
         // Monitor updater state
-        self.updaterController.updater.publisher(for: \.canCheckForUpdates)
+        self.updaterController?.updater.publisher(for: \.canCheckForUpdates)
             .assign(to: &$canCheckForUpdates)
     }
     
     /// Trigger a user-initiated update check
     func checkForUpdates() {
-        updaterController.checkForUpdates(nil)
+        guard isConfigured else {
+            // Show alert in dev mode
+            let alert = NSAlert()
+            alert.messageText = "Updates Not Available"
+            alert.informativeText = "Auto-updates are only available in the packaged .app release. You're running in development mode.\n\nTo get the packaged app, run:\n./Scripts/package_app.sh"
+            alert.alertStyle = .informational
+            alert.addButton(withTitle: "OK")
+            alert.runModal()
+            return
+        }
+        updaterController?.checkForUpdates(nil)
     }
     
     /// Check automatically in background
     func checkForUpdatesInBackground() {
-        updaterController.updater.checkForUpdatesInBackground()
+        guard isConfigured else { return }
+        updaterController?.updater.checkForUpdatesInBackground()
     }
     
     /// Enable/Disable automatic checks
     var automaticallyChecksForUpdates: Bool {
-        get { updaterController.updater.automaticallyChecksForUpdates }
-        set { updaterController.updater.automaticallyChecksForUpdates = newValue }
-    }
-    
-    /// Enable/Disable automatic downloading
-    var automaticallyDownloadsUpdates: Bool {
-        get { updaterController.updater.automaticallyDownloadsUpdates }
-        set { updaterController.updater.automaticallyDownloadsUpdates = newValue }
+        get { updaterController?.updater.automaticallyChecksForUpdates ?? false }
+        set { updaterController?.updater.automaticallyChecksForUpdates = newValue }
     }
 }
