@@ -27,7 +27,7 @@ This project adheres to a Code of Conduct. By participating, you are expected to
 
 ```bash
 # Fork and clone
-git clone https://github.com/YOUR_USERNAME/reviewBar.git
+git clone https://github.com/zymawy/reviewBar.git
 cd reviewBar
 
 # Build
