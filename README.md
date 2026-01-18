@@ -33,17 +33,23 @@
 
 ### Installation
 
-#### Option 1: Download Release
-> Coming soon — check [Releases](https://github.com/zymawy/reviewBar/releases)
+#### GitHub Releases
+Download the latest `.dmg` from [Releases](https://github.com/zymawy/reviewBar/releases)
 
-#### Option 2: Build from Source
-
+#### Homebrew (macOS)
 ```bash
-# Clone the repository
+brew install --cask zymawy/tap/reviewbar
+```
+
+#### CLI Only
+```bash
+brew install zymawy/tap/reviewbar
+```
+
+#### Build from Source
+```bash
 git clone https://github.com/zymawy/reviewBar.git
 cd reviewBar
-
-# Build and run
 swift run ReviewBar
 ```
 
