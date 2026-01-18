@@ -123,11 +123,8 @@ struct DashboardView: View {
     private func startReview(_ request: ReviewRequest) {
         HapticManager.trigger(.generic)
         Task {
-            do {
-                _ = try await reviewStore.startReview(request)
-            } catch {
+            if await reviewStore.startReview(request) == nil {
                 HapticManager.error()
-                print("Failed to start review: \(error)")
             }
         }
     }
@@ -205,17 +202,25 @@ struct DashboardToolbar: View {
                 
                 Spacer()
                 
-                // Sort
-                Picker("Sort", selection: $sortOrder) {
-                    ForEach(SortOrder.allCases, id: \.self) { order in
-                        Text(order.rawValue).tag(order)
-                    }
-                }
                 .frame(width: 150)
+                
+                // Batch Action
+                if !reviewStore.selectedReviewIds.isEmpty {
+                    Button {
+                        HapticManager.trigger(.generic)
+                        Task { await reviewStore.startBatchReview() }
+                    } label: {
+                        Label("Review (\(reviewStore.selectedReviewIds.count))", systemImage: "play.fill")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .transition(.scale.combined(with: .opacity))
+                }
                 
                 // Refresh
                 Button {
                     HapticManager.trigger(.generic)
+                    SoundManager.playAction()
                     onRefresh()
                 } label: {
                     Image(systemName: "arrow.clockwise")
@@ -252,9 +257,9 @@ struct ReviewProgressBar: View {
                 .progressViewStyle(.linear)
                 .tint(DesignSystem.Colors.brandPrimary)
         }
-        .padding(8)
-        .background(DesignSystem.Colors.brandPrimary.opacity(0.05))
-        .cornerRadius(DesignSystem.Radius.small)
+        .padding()
+        .background(DesignSystem.Colors.cardBackground)
+        .cornerRadius(DesignSystem.Radius.medium)
         .onAppear {
             withAnimation(.easeInOut(duration: 2.0).repeatForever()) {
                 progress = 0.9
@@ -295,6 +300,7 @@ struct PendingReviewsView: View {
 }
 
 struct PendingReviewCard: View {
+    @EnvironmentObject var reviewStore: ReviewStore
     let request: ReviewRequest
     let onStartReview: () -> Void
     let onDismiss: () -> Void
@@ -303,6 +309,20 @@ struct PendingReviewCard: View {
     
     var body: some View {
         HStack(spacing: DesignSystem.Spacing.medium) {
+            // Selection
+            Toggle("", isOn: Binding(
+                get: { reviewStore.selectedReviewIds.contains(request.id) },
+                set: { isSelected in
+                    if isSelected {
+                        reviewStore.selectedReviewIds.insert(request.id)
+                    } else {
+                        reviewStore.selectedReviewIds.remove(request.id)
+                    }
+                }
+            ))
+            .toggleStyle(.checkbox)
+            .labelsHidden()
+            
             // Priority indicator with glow
             Circle()
                 .fill(priorityColor)

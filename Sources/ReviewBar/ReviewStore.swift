@@ -15,6 +15,9 @@ public final class ReviewStore: ObservableObject {
     @Published public private(set) var lastRefresh: Date?
     @Published public private(set) var lastError: Error?
     
+    /// Selected review IDs for batch operations
+    @Published public var selectedReviewIds: Set<String> = []
+    
     /// Current status message for UI feedback
     @Published public private(set) var statusMessage: String = ""
     
@@ -95,6 +98,10 @@ public final class ReviewStore: ObservableObject {
             pendingReviews = allRequests
             lastRefresh = Date()
             
+            // Clear selection if it's no longer valid
+            let validIds = Set(pendingReviews.map { $0.id })
+            selectedReviewIds = selectedReviewIds.intersection(validIds)
+            
         } catch {
             lastError = error
             print("ReviewStore: Refresh failed: \(error)")
@@ -107,18 +114,22 @@ public final class ReviewStore: ObservableObject {
     
     // MARK: - Review Operations
     
-    public func startReview(_ request: ReviewRequest) async throws -> ReviewResult {
+    public func startReview(_ request: ReviewRequest) async -> ReviewResult? {
         guard let analyzer = reviewAnalyzer else {
-            throw ReviewError.notConfigured
+            lastError = ReviewError.notConfigured
+            return nil
         }
         
         guard !isReviewing else {
-            throw ReviewError.alreadyReviewing
+            lastError = ReviewError.alreadyReviewing
+            log("Already reviewing another PR", level: .warning)
+            return nil
         }
         
         isReviewing = true
         currentlyReviewing = request
-        statusMessage = "Starting review..."
+        statusMessage = "Starting review for \(request.title)..."
+        HapticManager.trigger(.generic)
         log("Starting review for PR #\(request.number): \(request.title)")
         
         var clonedDir: URL? = nil
@@ -199,13 +210,39 @@ public final class ReviewStore: ObservableObject {
                 userInfo: ["result": result]
             )
             
+            // Track in analytics
+            AnalyticsService.shared.track(result: result)
+            
+            // Play success sound and trigger haptic
+            SoundManager.playSuccess()
+            HapticManager.success()
+            
             return result
             
         } catch {
             lastError = error
-            throw error
+            log("Review failed: \(error.localizedDescription)", level: .error)
+            SoundManager.playError()
+            HapticManager.error()
+            return nil
         }
-
+    }
+    
+    // MARK: - Batch Review
+    
+    public func startBatchReview() async {
+        guard !selectedReviewIds.isEmpty else { return }
+        
+        let reviewsToRun = pendingReviews.filter { selectedReviewIds.contains($0.id) }
+        log("Starting batch review of \(reviewsToRun.count) items", level: .info)
+        
+        for request in reviewsToRun {
+            guard !Task.isCancelled else { break }
+            _ = await startReview(request)
+        }
+        
+        selectedReviewIds.removeAll()
+        log("Batch review complete", level: .success)
     }
     
     public func postReview(_ result: ReviewResult) async throws {
