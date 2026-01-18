@@ -33,6 +33,8 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
     case notifications
     case advanced
     
+    case about
+    
     var id: String { rawValue }
     
     var title: String {
@@ -44,6 +46,7 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
         case .profiles: return "Profiles"
         case .notifications: return "Notifications"
         case .advanced: return "Advanced"
+        case .about: return "About"
         }
     }
     
@@ -56,6 +59,7 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
         case .profiles: return "person.2"
         case .notifications: return "bell"
         case .advanced: return "wrench.and.screwdriver"
+        case .about: return "info.circle"
         }
     }
     
@@ -69,6 +73,7 @@ enum PreferencesPane: String, CaseIterable, Identifiable {
         case .profiles: ProfilesPane()
         case .notifications: NotificationsPane()
         case .advanced: AdvancedPane()
+        case .about: AboutPane()
         }
     }
 }
@@ -715,6 +720,86 @@ struct AdvancedPane: View {
         }
         .formStyle(.grouped)
         .navigationTitle("Advanced")
+    }
+}
+
+// MARK: - About Pane
+
+struct AboutPane: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            
+            // App Icon
+            if let iconPath = Bundle.main.path(forResource: "AppIcon", ofType: "icns"),
+               let image = NSImage(contentsOfFile: iconPath) {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 128, height: 128)
+                    .shadow(radius: 10)
+            } else {
+                // Fallback if icon not loaded in preview
+                Image(systemName: "app.dashed")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 100, height: 100)
+                    .foregroundStyle(.linearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+            }
+            
+            VStack(spacing: 8) {
+                Text("ReviewBar")
+                    .font(.system(size: 24, weight: .bold))
+                
+                Text("Version 1.0.0 (1)")
+                    .foregroundColor(.secondary)
+                
+                Text("May your code always compile and your reviews be swift.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
+            }
+            
+            VStack(spacing: 12) {
+                Link(destination: URL(string: "https://github.com/zymawy/reviewbar")!) {
+                    Label("GitHub", systemImage: "chevron.left.forwardslash.chevron.right")
+                        .frame(width: 200)
+                }
+                
+                Link(destination: URL(string: "https://github.com/zymawy/reviewbar/issues")!) {
+                    Label("Report Issue", systemImage: "ant")
+                        .frame(width: 200)
+                }
+                
+                Link(destination: URL(string: "mailto:support@reviewbar.app")!) {
+                    Label("Contact Support", systemImage: "envelope")
+                        .frame(width: 200)
+                }
+            }
+            .buttonStyle(.borderless)
+            .controlSize(.large)
+            
+            Spacer()
+            
+            Divider()
+                .frame(width: 300)
+            
+            VStack(spacing: 8) {
+                Button("Check for Updates...") {
+                    // Sparkle update check would go here
+                }
+                .disabled(true)
+                
+                Text("© 2026 ReviewBar Contributors. MIT License.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.bottom, 20)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .navigationTitle("About")
     }
 }
 
