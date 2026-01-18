@@ -88,12 +88,21 @@ struct WelcomeStep: View {
     let onNext: () -> Void
     
     var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "checkmark.circle.fill")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 80, height: 80)
-                .foregroundColor(.accentColor)
+        VStack(spacing: 32) {
+            // Hero Icon
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 96, height: 96)
+                    .opacity(0.1)
+                
+                Image(systemName: "checkmark.circle.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 64, height: 64)
+                    .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .shadow(color: .blue.opacity(0.3), radius: 10, x: 0, y: 5)
+            }
             
             VStack(spacing: 12) {
                 Text("Welcome to ReviewBar")
@@ -105,7 +114,7 @@ struct WelcomeStep: View {
                     .multilineTextAlignment(.center)
             }
             
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 20) {
                 FeatureRow(icon: "brain.head.profile", title: "AI Analysis", description: "Catch bugs and get suggestions using Claude, Gemini, or OpenAI.")
                 FeatureRow(icon: "terminal", title: "CLI Integration", description: "Use your existing CLI tools without needing API keys.")
                 FeatureRow(icon: "bell.badge", title: "Smart Notifications", description: "Get notified when your reviews are ready.")
@@ -119,10 +128,13 @@ struct WelcomeStep: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
+            .tint(.accentColor)
         }
         .padding(40)
     }
 }
+
+// MARK: - Setup Steps
 
 struct GitHubSetupStep: View {
     let onNext: () -> Void
@@ -272,12 +284,21 @@ struct CompletionStep: View {
     let onFinish: () -> Void
     
     var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "party.popper.fill")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 80, height: 80)
-                .foregroundColor(.yellow)
+        VStack(spacing: 32) {
+            // Hero Icon
+            ZStack {
+                Circle()
+                    .fill(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .frame(width: 96, height: 96)
+                    .opacity(0.1)
+                
+                Image(systemName: "party.popper.fill")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 64, height: 64)
+                    .foregroundStyle(LinearGradient(colors: [.yellow, .orange], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .shadow(color: .orange.opacity(0.3), radius: 10, x: 0, y: 5)
+            }
             
             VStack(spacing: 12) {
                 Text("You're All Set!")
@@ -291,8 +312,8 @@ struct CompletionStep: View {
             Text("Click the checkmark icon in the menu bar to see your reviews.")
                 .font(.callout)
                 .padding()
-                .background(Color(.controlBackgroundColor))
-                .cornerRadius(8)
+                .background(.regularMaterial)
+                .cornerRadius(12)
             
             Spacer()
             
@@ -301,7 +322,8 @@ struct CompletionStep: View {
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
-             .keyboardShortcut(.defaultAction)
+            .keyboardShortcut(.defaultAction)
+            .tint(.accentColor)
         }
         .padding(40)
     }

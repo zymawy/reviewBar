@@ -12,59 +12,68 @@ struct DashboardView: View {
     @State private var sortOrder: SortOrder = .newest
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Status Banner (when reviewing)
-            if reviewStore.isReviewing {
-                HStack(spacing: 12) {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text(reviewStore.statusMessage)
-                        .font(.callout.weight(.medium))
-                    Spacer()
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 10)
-                .background(Color.accentColor.opacity(0.15))
-            }
-            
-            // Toolbar
-            DashboardToolbar(
-                searchText: $searchText,
-                filterRepository: $filterRepository,
-                sortOrder: $sortOrder,
-                onRefresh: {
-                    Task { await reviewStore.refresh() }
-                }
-            )
-            
-            Divider()
-            
-            // Tab bar (now includes Logs)
-            Picker("View", selection: $selectedTab) {
+        NavigationSplitView {
+            // Sidebar
+            List(selection: $selectedTab) {
                 ForEach(DashboardTab.allCases, id: \.self) { tab in
-                    Text(tab.title)
+                    NavigationLink(value: tab) {
+                        Label(tab.title, systemImage: tab.icon)
+                    }
                 }
             }
-            .pickerStyle(.segmented)
-            .padding()
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 250)
             
-            // Content
-            switch selectedTab {
-            case .pending:
-                PendingReviewsView(
-                    reviews: filteredPendingReviews,
-                    onStartReview: startReview,
-                    onDismiss: dismissReview
-                )
-            case .recent:
-                RecentResultsView(results: reviewStore.recentResults)
-            case .analytics:
-                AnalyticsView()
-            case .logs:
-                ActivityLogsView(logs: reviewStore.activityLog)
+        } detail: {
+            ZStack {
+                Color(nsColor: .windowBackgroundColor)
+                
+                VStack(spacing: 0) {
+                    // Status Banner
+                    if reviewStore.isReviewing {
+                        HStack(spacing: 12) {
+                            ProgressView().scaleEffect(0.6)
+                            Text(reviewStore.statusMessage)
+                                .font(.callout.weight(.medium))
+                            Spacer()
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 8)
+                        .background(.regularMaterial)
+                        .overlay(Divider(), alignment: .bottom)
+                    }
+                    
+                    // Toolbar area
+                    DashboardToolbar(
+                        searchText: $searchText,
+                        filterRepository: $filterRepository,
+                        sortOrder: $sortOrder,
+                        onRefresh: { Task { await reviewStore.refresh() } }
+                    )
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(.regularMaterial)
+                    .overlay(Divider(), alignment: .bottom)
+                    
+                    // Main Content
+                    switch selectedTab {
+                    case .pending:
+                        PendingReviewsView(
+                            reviews: filteredPendingReviews,
+                            onStartReview: startReview,
+                            onDismiss: dismissReview
+                        )
+                    case .recent:
+                        RecentResultsView(results: reviewStore.recentResults)
+                    case .analytics:
+                        AnalyticsView()
+                    case .logs:
+                        ActivityLogsView(logs: reviewStore.activityLog)
+                    }
+                }
             }
+            .background(.thickMaterial)
         }
-        .frame(minWidth: 800, minHeight: 600)
         .alert(item: Binding<ErrorWrapper?>(
             get: { reviewStore.lastError.map { ErrorWrapper(error: $0) } },
             set: { _ in reviewStore.clearError() }
@@ -76,6 +85,7 @@ struct DashboardView: View {
             )
         }
     }
+
     
     private var filteredPendingReviews: [ReviewRequest] {
         var reviews = reviewStore.pendingReviews
@@ -132,10 +142,19 @@ enum DashboardTab: CaseIterable {
     
     var title: String {
         switch self {
-        case .pending: return "Pending"
-        case .recent: return "Recent"
+        case .pending: return "Pending Reviews"
+        case .recent: return "Recent Activity"
         case .analytics: return "Analytics"
-        case .logs: return "Logs"
+        case .logs: return "Activity Logs"
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .pending: return "clock"
+        case .recent: return "checkmark.circle"
+        case .analytics: return "chart.bar"
+        case .logs: return "terminal"
         }
     }
 }
@@ -241,28 +260,29 @@ struct PendingReviewCard: View {
     
     var body: some View {
         HStack(spacing: 16) {
-            // Priority indicator
+            // Priority indicator with glow
             Circle()
                 .fill(priorityColor)
-                .frame(width: 12, height: 12)
+                .frame(width: 8, height: 8)
+                .shadow(color: priorityColor.opacity(0.6), radius: 4, x: 0, y: 0)
+                .padding(.leading, 4)
             
             // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(request.title)
                     .font(.headline)
                     .lineLimit(1)
+                    .foregroundColor(.primary)
                 
-                HStack(spacing: 8) {
+                HStack(spacing: 12) {
                     Label(request.repository.fullName, systemImage: "folder")
-                    
                     Label("#\(request.number)", systemImage: "number")
-                    
                     Label("@\(request.author.login)", systemImage: "person")
-                    
-                    Label(request.createdAt.relativeDescription ?? "", systemImage: "clock")
+                    Label(request.createdAt.relativeDescription ?? "Unknown", systemImage: "clock")
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)
+                .symbolRenderingMode(.hierarchical)
             }
             
             Spacer()
@@ -270,21 +290,34 @@ struct PendingReviewCard: View {
             // Actions
             if isHovering {
                 HStack(spacing: 8) {
-                    Button("Dismiss") {
-                        onDismiss()
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                            .foregroundColor(.secondary)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.plain)
+                    .help("Dismiss")
                     
                     Button("Review") {
                         onStartReview()
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(.accentColor)
+                    .shadow(color: .accentColor.opacity(0.3), radius: 2)
                 }
+                .transition(.opacity.combined(with: .move(edge: .trailing)).animation(.snappy))
             }
         }
-        .padding()
-        .background(Color(.controlBackgroundColor))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.regularMaterial)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(isHovering ? Color.accentColor.opacity(0.3) : Color.clear, lineWidth: 1)
+        )
         .cornerRadius(12)
+        .shadow(color: .black.opacity(isHovering ? 0.15 : 0.05), radius: 8, x: 0, y: isHovering ? 4 : 2)
+        .scaleEffect(isHovering ? 1.01 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
         .onHover { hovering in
             isHovering = hovering
         }
@@ -328,51 +361,68 @@ struct RecentResultsView: View {
 struct RecentResultCard: View {
     let result: ReviewResult
     @State private var showModal = false
+    @State private var isHovering = false
     
     var body: some View {
         Button {
             showModal = true
         } label: {
             HStack(spacing: 16) {
-                // Recommendation badge
+                // Recommendation badge with glow
                 Image(systemName: recommendationIcon)
                     .font(.title2)
                     .foregroundColor(recommendationColor)
                     .frame(width: 32)
+                    .shadow(color: recommendationColor.opacity(0.4), radius: 6)
                 
                 // Content
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(result.pullRequest.title)
                         .font(.headline)
                         .lineLimit(1)
+                        .foregroundColor(.primary)
                     
                     HStack(spacing: 12) {
                         Label(result.pullRequest.repository, systemImage: "folder")
-                        
                         Label("\(result.issues.count) issues", systemImage: "exclamationmark.circle")
-                        
-                        Label(result.analyzedAt.relativeDescription ?? "", systemImage: "clock")
+                        Label(result.analyzedAt.relativeDescription ?? "Just now", systemImage: "clock")
                     }
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .symbolRenderingMode(.hierarchical)
                 }
                 
                 Spacer()
                 
                 // Stats
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: 4) {
                     Text(result.recommendation.displayName)
                         .font(.caption.weight(.semibold))
                         .foregroundColor(recommendationColor)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(recommendationColor.opacity(0.1))
+                        .cornerRadius(6)
                     
                     Text("\(Int(result.confidence * 100))% confidence")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
-            .padding()
-            .background(Color(.controlBackgroundColor))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(.regularMaterial)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isHovering ? recommendationColor.opacity(0.3) : Color.clear, lineWidth: 1)
+            )
             .cornerRadius(12)
+            .shadow(color: .black.opacity(isHovering ? 0.15 : 0.05), radius: 8, x: 0, y: isHovering ? 4 : 2)
+            .scaleEffect(isHovering ? 1.01 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
+            .onHover { hovering in
+                isHovering = hovering
+            }
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $showModal) {

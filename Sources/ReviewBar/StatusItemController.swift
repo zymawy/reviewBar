@@ -94,18 +94,36 @@ final class StatusItemController: NSObject {
     }
     
     private func renderIcon(pendingCount: Int, isReviewing: Bool, animationFrame: Int) -> NSImage {
-        let size = NSSize(width: 18, height: 18)
+        let size = NSSize(width: 22, height: 22) // Slightly larger for better touch target
         
         let image = NSImage(size: size, flipped: false) { rect in
-            // Base icon - checkmark in circle
-            if isReviewing {
-                // Animated loading state
-                self.drawLoadingIcon(in: rect, frame: animationFrame)
-            } else {
-                self.drawStaticIcon(in: rect)
+            // Center the icon vertically
+            let iconSize: CGFloat = 15
+            let iconRect = NSRect(
+                x: (rect.width - iconSize) / 2,
+                y: (rect.height - iconSize) / 2 - 0.5, // Slight optical adjustment
+                width: iconSize,
+                height: iconSize
+            )
+            
+            // Choose symbol
+            let symbolName = isReviewing ? "sparkles" : "eyeglasses"
+            
+            // Draw Symbol
+            if let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
+                let config = NSImage.SymbolConfiguration(pointSize: iconSize, weight: .medium)
+                let configured = symbol.withSymbolConfiguration(config)
+                
+                if isReviewing {
+                    // Pulse opacity for loading effect
+                    let opacity = 0.5 + 0.5 * sin(Double(animationFrame) * 0.5)
+                    configured?.draw(in: iconRect, from: .zero, operation: .sourceOver, fraction: opacity)
+                } else {
+                    configured?.draw(in: iconRect)
+                }
             }
             
-            // Badge for pending count
+            // Badge for pending count (Reviewing state doesn't show count to reduce clutter)
             if pendingCount > 0 && !isReviewing {
                 self.drawBadge(count: pendingCount, in: rect)
             }
@@ -113,56 +131,11 @@ final class StatusItemController: NSObject {
             return true
         }
         
+        image.isTemplate = true // Ensures it adapts to dark/light mode automatically
         return image
     }
     
-    private func drawStaticIcon(in rect: NSRect) {
-        let iconRect = rect.insetBy(dx: 1, dy: 1)
-        
-        // Circle
-        let circlePath = NSBezierPath(ovalIn: iconRect)
-        NSColor.labelColor.setStroke()
-        circlePath.lineWidth = 1.5
-        circlePath.stroke()
-        
-        // Checkmark
-        let checkPath = NSBezierPath()
-        let centerX = rect.midX
-        let centerY = rect.midY
-        
-        checkPath.move(to: NSPoint(x: centerX - 4, y: centerY))
-        checkPath.line(to: NSPoint(x: centerX - 1, y: centerY - 3))
-        checkPath.line(to: NSPoint(x: centerX + 4, y: centerY + 3))
-        
-        checkPath.lineWidth = 2
-        checkPath.lineCapStyle = .round
-        checkPath.lineJoinStyle = .round
-        checkPath.stroke()
-    }
-    
-    private func drawLoadingIcon(in rect: NSRect, frame: Int) {
-        let iconRect = rect.insetBy(dx: 2, dy: 2)
-        let center = NSPoint(x: rect.midX, y: rect.midY)
-        let radius = iconRect.width / 2
-        
-        // Draw spinning arc
-        let startAngle = CGFloat(frame * 30)
-        let endAngle = startAngle + 270
-        
-        let path = NSBezierPath()
-        path.appendArc(
-            withCenter: center,
-            radius: radius,
-            startAngle: startAngle,
-            endAngle: endAngle,
-            clockwise: false
-        )
-        
-        NSColor.controlAccentColor.setStroke()
-        path.lineWidth = 2
-        path.lineCapStyle = .round
-        path.stroke()
-    }
+    // Removed old manual drawing methods drawStaticIcon and drawLoadingIcon
     
     private func drawBadge(count: Int, in rect: NSRect) {
         let badgeSize: CGFloat = 10
