@@ -1,0 +1,41 @@
+# SwiftFormat Configuration for ReviewBar
+# Documentation: https://github.com/nicklockwood/SwiftFormat
+
+# Format options
+--swiftversion 5.9
+--indent 4
+--tabwidth 4
+--maxwidth 150
+--wraparguments before-first
+--wrapparameters before-first
+--wrapcollections before-first
+--closingparen balanced
+--funcattributes prev-line
+--typeattributes prev-line
+--varattributes prev-line
+--marktypes never
+--markextensions never
+--extensionacl on-declarations
+--patternlet hoist
+--stripunusedargs closure-only
+--self remove
+--importgrouping alpha
+--operatorfunc spaced
+--nospaceoperators ...,..<
+--ifdef no-indent
+
+# Rules to enable
+--enable isEmpty
+--enable sortedSwitchCases
+--enable wrapEnumCases
+--enable wrapSwitchCases
+--enable markTypes
+--enable organizeDeclarations
+
+# Rules to disable
+--disable redundantSelf
+--disable trailingCommas
+--disable wrapMultilineStatementBraces
+
+# Exclusions
+--exclude .build,Package.swift
