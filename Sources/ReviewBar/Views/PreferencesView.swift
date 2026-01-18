@@ -787,9 +787,9 @@ struct AboutPane: View {
             
             VStack(spacing: 8) {
                 Button("Check for Updates...") {
-                    // Sparkle update check would go here
+                    UpdateController.shared.checkForUpdates()
                 }
-                .disabled(true)
+                .disabled(!UpdateController.shared.canCheckForUpdates)
                 
                 Text("© 2026 ReviewBar Contributors. MIT License.")
                     .font(.caption2)
