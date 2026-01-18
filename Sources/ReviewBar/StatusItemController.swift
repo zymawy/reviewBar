@@ -94,24 +94,22 @@ final class StatusItemController: NSObject {
     }
     
     private func renderIcon(pendingCount: Int, isReviewing: Bool, animationFrame: Int) -> NSImage {
-        let size = NSSize(width: 22, height: 22) // Slightly larger for better touch target
+        let size = NSSize(width: 18, height: 18)
         
         let image = NSImage(size: size, flipped: false) { rect in
-            // Center the icon vertically
-            let iconSize: CGFloat = 15
+            let iconSize: CGFloat = 16
             let iconRect = NSRect(
                 x: (rect.width - iconSize) / 2,
-                y: (rect.height - iconSize) / 2 - 0.5, // Slight optical adjustment
+                y: (rect.height - iconSize) / 2,
                 width: iconSize,
                 height: iconSize
             )
             
-            // Choose symbol
-            let symbolName = isReviewing ? "sparkles" : "eyeglasses"
+            // Use shield symbol to match our branding (shield + code)
+            let symbolName = isReviewing ? "shield.lefthalf.filled.badge.checkmark" : "shield.lefthalf.filled"
             
-            // Draw Symbol
-            if let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) {
-                let config = NSImage.SymbolConfiguration(pointSize: iconSize, weight: .medium)
+            if let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: "ReviewBar") {
+                let config = NSImage.SymbolConfiguration(pointSize: iconSize, weight: .regular)
                 let configured = symbol.withSymbolConfiguration(config)
                 
                 if isReviewing {
@@ -123,7 +121,7 @@ final class StatusItemController: NSObject {
                 }
             }
             
-            // Badge for pending count (Reviewing state doesn't show count to reduce clutter)
+            // Badge for pending count
             if pendingCount > 0 && !isReviewing {
                 self.drawBadge(count: pendingCount, in: rect)
             }
@@ -131,7 +129,7 @@ final class StatusItemController: NSObject {
             return true
         }
         
-        image.isTemplate = true // Ensures it adapts to dark/light mode automatically
+        image.isTemplate = true
         return image
     }
     
