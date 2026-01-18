@@ -1,4 +1,0 @@
-module ReviewBarPackageTests {
-    header "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ReviewBarPackageTests.build/ReviewBarPackageTests-Swift.h"
-    requires objc
-}

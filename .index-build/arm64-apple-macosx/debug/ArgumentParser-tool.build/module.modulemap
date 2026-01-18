@@ -1,4 +1,0 @@
-module ArgumentParser {
-    header "/Users/zymawy/Code/CodexBar/ReviewBar/.index-build/arm64-apple-macosx/debug/ArgumentParser-tool.build/ArgumentParser-Swift.h"
-    requires objc
-}
