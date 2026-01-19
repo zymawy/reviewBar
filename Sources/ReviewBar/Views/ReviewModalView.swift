@@ -50,7 +50,10 @@ public struct ReviewModalView: View {
                         SkillsSection(results: result.skillResults)
                     case .diff:
                         if let diff = result.diff {
-                            DiffView(diff: diff)
+                            DiffView(
+                                diff: diff,
+                                reviewRequest: findRequest(for: result)
+                            )
                         } else {
                             EmptyStateView(icon: "doc.text", title: "No Diff Available", subtitle: "Diff content was not captured for this review.")
                         }
@@ -87,6 +90,23 @@ public struct ReviewModalView: View {
             Text(postErrorMessage)
         }
         .animation(.easeInOut(duration: 0.2), value: showCopiedToast)
+
+    }
+    
+    private func findRequest(for result: ReviewResult) -> ReviewRequest? {
+        // Try to find matching pending review
+        if let pending = reviewStore.pendingReviews.first(where: { $0.pullRequestID == result.pullRequest.id }) {
+            return pending
+        }
+        
+        // Try currently reviewing
+        if let current = reviewStore.currentlyReviewing, current.pullRequestID == result.pullRequest.id {
+            return current
+        }
+        
+        // If not found (e.g. from history), we construct a minimal one if we can identify provider
+        // For now, we return nil which disables commenting
+        return nil
     }
 }
 

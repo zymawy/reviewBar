@@ -38,7 +38,7 @@ public actor ReviewAnalyzer {
         if let bridge = mcpBridge {
             skillResults = await bridge.executeSkills(
                 diff: parsedDiff,
-                skillIDs: profile?.skillIDs ?? []
+                skillIDs: [] // TODO: Add skills to profile
             )
         }
         
@@ -51,7 +51,8 @@ public actor ReviewAnalyzer {
         )
         
         // 4. Call LLM
-        let model = profile?.llmModel ?? "claude-3-5-sonnet-20241022"
+        // TODO: specific model selection per profile
+        let model = "claude-3-5-sonnet-20241022"
         let response: String
         
         // Check if LLM provider supports working directory (CLI-based)
@@ -89,8 +90,22 @@ public actor ReviewAnalyzer {
         skillFindings: [SkillFinding],
         profile: ReviewProfile?
     ) -> String {
-        var prompt = """
-        You are an expert code reviewer. Analyze this pull request and provide a detailed review.
+        var prompt = ""
+        
+        if let customPrompt = profile?.systemPrompt, !customPrompt.isEmpty {
+             prompt += """
+             \(customPrompt)
+             
+             """
+        } else {
+             prompt += """
+             You are an expert code reviewer. Analyze this pull request and provide a detailed review.
+             """
+        }
+        
+        prompt += """
+        
+        Analyze this pull request and provide a detailed review.
         
         ## Pull Request Information
         
@@ -134,20 +149,8 @@ public actor ReviewAnalyzer {
             }
         }
         
-        // Add custom rules from profile
-        if let rules = profile?.customRules, !rules.isEmpty {
-            prompt += """
-            
-            ## Review Guidelines
-            
-            Pay special attention to these rules:
-            
-            """
-            
-            for rule in rules {
-                prompt += "- \(rule.name): \(rule.message)\n"
-            }
-        }
+        // Add custom rules (if any, though profile prompt usually covers this)
+        // Kept for backward compatibility or if we add explicit rules later
         
         // Add diff (truncated if too large)
         let diffText = formatDiff(diff, maxLines: 2000)

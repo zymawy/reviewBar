@@ -1,6 +1,7 @@
 import Foundation
 import ReviewBarCore
 
+@MainActor
 public final class AnalyticsService: ObservableObject {
     public static let shared = AnalyticsService()
     
@@ -51,5 +52,41 @@ public final class AnalyticsService: ObservableObject {
     public var chartData: [ChartData] {
         reviewsByDay.map { ChartData(date: $0.key, count: $0.value) }
             .sorted { $0.date < $1.date }
+    }
+    
+    // MARK: - Export
+    
+    public func generateCSVReport() -> String {
+        var csv = "Date,Repository,PR Number,Title,Author,Recommendation,Confidence,Issues Found\n"
+        
+        // Sort by date descending
+        let sortedHistory = history.sorted { $0.analyzedAt > $1.analyzedAt }
+        
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .short
+        dateFormatter.timeStyle = .short
+        
+        for result in sortedHistory {
+            let pr = result.pullRequest
+            let date = dateFormatter.string(from: result.analyzedAt)
+            
+            // Escape fields for CSV
+            let title = result.pullRequest.title.replacingOccurrences(of: "\"", with: "\"\"")
+            
+            let line = [
+                "\"\(date)\"",
+                "\"\(pr.repository)\"",
+                "\(pr.number)",
+                "\"\(title)\"",
+                "\"\(pr.author)\"",
+                "\"\(result.recommendation.displayName)\"",
+                String(format: "%.2f", result.confidence),
+                "\(result.issues.count)"
+            ].joined(separator: ",")
+            
+            csv += line + "\n"
+        }
+        
+        return csv
     }
 }

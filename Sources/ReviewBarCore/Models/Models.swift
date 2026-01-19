@@ -450,47 +450,7 @@ public struct TokenUsage: Sendable, Codable {
     }
 }
 
-// MARK: - Review Profile
 
-public struct ReviewProfile: Sendable, Codable, Identifiable {
-    public let id: UUID
-    public var name: String
-    public var repos: [String]  // "owner/repo" or "owner/*" patterns
-    
-    public var triggerOn: TriggerCondition
-    public var skillIDs: [String]
-    public var customRules: [InlineRule]
-    
-    public var llmProvider: String
-    public var llmModel: String
-    
-    public var autoPost: Bool
-    public var autoApproveThreshold: Double?  // Confidence threshold for auto-approve
-    
-    public init(
-        id: UUID = UUID(),
-        name: String,
-        repos: [String] = [],
-        triggerOn: TriggerCondition = .onAssign,
-        skillIDs: [String] = [],
-        customRules: [InlineRule] = [],
-        llmProvider: String = "claude",
-        llmModel: String = "claude-3-5-sonnet-20241022",
-        autoPost: Bool = false,
-        autoApproveThreshold: Double? = nil
-    ) {
-        self.id = id
-        self.name = name
-        self.repos = repos
-        self.triggerOn = triggerOn
-        self.skillIDs = skillIDs
-        self.customRules = customRules
-        self.llmProvider = llmProvider
-        self.llmModel = llmModel
-        self.autoPost = autoPost
-        self.autoApproveThreshold = autoApproveThreshold
-    }
-}
 
 public enum TriggerCondition: String, Codable, Sendable, CaseIterable {
     case onAssign

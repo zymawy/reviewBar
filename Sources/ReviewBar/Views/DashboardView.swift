@@ -217,15 +217,30 @@ struct DashboardToolbar: View {
                     .transition(.scale.combined(with: .opacity))
                 }
                 
-                // Refresh
-                Button {
-                    HapticManager.trigger(.generic)
-                    SoundManager.playAction()
-                    onRefresh()
-                } label: {
-                    Image(systemName: "arrow.clockwise")
+                // Refresh and Status
+                HStack(spacing: 8) {
+                    if let status = reviewStore.lastLogMessage {
+                        Text(status)
+                            .font(.caption.monospaced())
+                            .foregroundColor(.secondary)
+                            .transition(.asymmetric(
+                                insertion: .push(from: .bottom).combined(with: .opacity),
+                                removal: .push(from: .top).combined(with: .opacity)
+                            ))
+                            .id(status) // Force animation on text change
+                    }
+                    
+                    Button {
+                        HapticManager.trigger(.generic)
+                        SoundManager.playAction()
+                        onRefresh()
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .rotationEffect(.degrees(reviewStore.isReviewing ? 360 : 0))
+                            .animation(reviewStore.isReviewing ? .linear(duration: 1).repeatForever(autoreverses: false) : .default, value: reviewStore.isReviewing)
+                    }
+                    .help("Refresh")
                 }
-                .help("Refresh")
             }
             .padding()
             
@@ -301,6 +316,7 @@ struct PendingReviewsView: View {
 
 struct PendingReviewCard: View {
     @EnvironmentObject var reviewStore: ReviewStore
+    @EnvironmentObject var settings: SettingsStore
     let request: ReviewRequest
     let onStartReview: () -> Void
     let onDismiss: () -> Void
@@ -364,6 +380,25 @@ struct PendingReviewCard: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(DesignSystem.Colors.brandPrimary)
+                    
+                    Menu {
+                        ForEach(settings.allProfiles) { profile in
+                            Button {
+                                // We need to pass the profile, but for now we'll just set it as default
+                                // Ideally, startReview would accept a profile override
+                                // For simplicity in this iteration, we'll just use the default
+                                settings.defaultProfileID = profile.id
+                                onStartReview()
+                            } label: {
+                                Label(profile.name, systemImage: profile.icon)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "chevron.down")
+                            .font(.caption)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .frame(width: 20)
                 }
                 .transition(.opacity.combined(with: .move(edge: .trailing)).animation(.snappy))
             }
@@ -495,8 +530,19 @@ struct AnalyticsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DesignSystem.Spacing.large) {
-                Text("Performance Overview")
-                    .brandTitle()
+                HStack {
+                    Text("Performance Overview")
+                        .brandTitle()
+                    
+                    Spacer()
+                    
+                    Button {
+                        saveReport()
+                    } label: {
+                        Label("Export Report", systemImage: "square.and.arrow.up")
+                    }
+                    .buttonStyle(.bordered)
+                }
                 
                 // Top Metrics
                 HStack(spacing: DesignSystem.Spacing.medium) {
@@ -555,6 +601,28 @@ struct AnalyticsView: View {
                 .glassCard()
             }
             .padding()
+        }
+    }
+    
+    private func saveReport() {
+        let csv = analytics.generateCSVReport()
+        
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.commaSeparatedText]
+        panel.nameFieldStringValue = "ReviewBar_Report_\(Date().formatted(date: .numeric, time: .omitted)).csv"
+        panel.canCreateDirectories = true
+        panel.title = "Export Analytics Report"
+        
+        panel.begin { response in
+            if response == .OK, let url = panel.url {
+                do {
+                    try csv.write(to: url, atomically: true, encoding: .utf8)
+                    // HapticManager.success() // Can't access here easily unless imported
+                } catch {
+                    print("Failed to save report: \(error)")
+                    // HapticManager.error()
+                }
+            }
         }
     }
 }

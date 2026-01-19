@@ -583,37 +583,129 @@ struct SkillInfo: Identifiable {
 // MARK: - Profiles Pane
 
 struct ProfilesPane: View {
-    @State private var profiles: [ReviewProfile] = []
-    @State private var selectedProfile: UUID?
+    @EnvironmentObject var settings: SettingsStore
+    @State private var selectedProfileID: UUID?
+    
+    // Sort profiles to keep standard ones first
+    var sortedProfiles: [ReviewProfile] {
+        settings.allProfiles
+    }
     
     var body: some View {
         HSplitView {
             // Profile list
-            List(profiles, selection: $selectedProfile) { profile in
-                VStack(alignment: .leading) {
-                    Text(profile.name)
-                        .font(.headline)
-                    Text("\(profile.repos.count) repos")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                List(sortedProfiles, selection: $selectedProfileID) { profile in
+                    HStack {
+                        Image(systemName: profile.icon)
+                            .foregroundColor(profile.isDefault ? .secondary : .primary)
+                        VStack(alignment: .leading) {
+                            Text(profile.name)
+                                .font(.headline)
+                            if profile.isDefault {
+                                Text("Built-in")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .tag(profile.id)
                 }
+                .listStyle(.sidebar)
+                .frame(minWidth: 180, maxWidth: 200)
+                
+                Divider()
+                
+                HStack {
+                    Button {
+                        let newProfile = ReviewProfile(
+                            name: "New Profile",
+                            icon: "person.circle",
+                            systemPrompt: "You are a code reviewer."
+                        )
+                        settings.customProfiles.append(newProfile)
+                        selectedProfileID = newProfile.id
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Add Profile")
+                    
+                    Spacer()
+                    
+                    Button {
+                        if let id = selectedProfileID,
+                           let index = settings.customProfiles.firstIndex(where: { $0.id == id }) {
+                            settings.customProfiles.remove(at: index)
+                            selectedProfileID = nil
+                        }
+                    } label: {
+                        Image(systemName: "minus")
+                    }
+                    .buttonStyle(.borderless)
+                    .disabled(selectedProfileID == nil || sortedProfiles.first(where: { $0.id == selectedProfileID })?.isDefault == true)
+                    .help("Remove Profile")
+                }
+                .padding(8)
             }
-            .frame(minWidth: 150, maxWidth: 200)
             
             // Profile editor
-            if let profileID = selectedProfile,
-               let profile = profiles.first(where: { $0.id == profileID }) {
-                ProfileEditor(profile: profile)
-            } else {
-                VStack {
-                    Text("Select a profile or create a new one")
-                        .foregroundColor(.secondary)
-                    
-                    Button("Create Profile") {
-                        let newProfile = ReviewProfile(name: "New Profile")
-                        profiles.append(newProfile)
-                        selectedProfile = newProfile.id
+            if let profileID = selectedProfileID,
+               let profile = sortedProfiles.first(where: { $0.id == profileID }) {
+                
+                // If it's a built-in profile, show read-only view
+                if profile.isDefault {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 20) {
+                            HStack {
+                                Image(systemName: profile.icon)
+                                    .font(.system(size: 48))
+                                VStack(alignment: .leading) {
+                                    Text(profile.name)
+                                        .font(.title)
+                                    Text("Built-in Profile")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .padding(.bottom)
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("System Prompt")
+                                    .font(.headline)
+                                Text(profile.systemPrompt)
+                                    .font(.body)
+                                    .padding()
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .background(Color.secondary.opacity(0.1))
+                                    .cornerRadius(8)
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding()
                     }
+                } else {
+                    // Editable view for custom profiles
+                    ProfileEditor(
+                        profile: Binding(
+                            get: { profile },
+                            set: { newValue in
+                                if let index = settings.customProfiles.firstIndex(where: { $0.id == newValue.id }) {
+                                    settings.customProfiles[index] = newValue
+                                }
+                            }
+                        )
+                    )
+                }
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: "person.2")
+                        .font(.system(size: 48))
+                        .foregroundColor(.secondary.opacity(0.5))
+                    Text("Select a profile to edit")
+                        .font(.title3)
+                        .foregroundColor(.secondary)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -623,24 +715,35 @@ struct ProfilesPane: View {
 }
 
 struct ProfileEditor: View {
-    let profile: ReviewProfile
+    @Binding var profile: ReviewProfile
     
     var body: some View {
         Form {
-            Section("Profile Settings") {
-                TextField("Name", text: .constant(profile.name))
+            Section("Identity") {
+                TextField("Name", text: $profile.name)
                 
-                Picker("Trigger", selection: .constant(profile.triggerOn)) {
-                    ForEach(TriggerCondition.allCases, id: \.self) { condition in
-                        Text(condition.displayName).tag(condition)
-                    }
+                HStack {
+                    Text("Icon")
+                    Spacer()
+                    TextField("SF Symbol Name", text: $profile.icon)
+                        .frame(width: 150)
+                    Image(systemName: profile.icon)
                 }
             }
             
-            Section("Repositories") {
-                Text("Add repository patterns (e.g., owner/repo or owner/*)")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+            Section("Behavior") {
+                VStack(alignment: .leading) {
+                    Text("System Prompt")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    TextEditor(text: $profile.systemPrompt)
+                        .font(.body.monospaced())
+                        .frame(minHeight: 150)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                        )
+                }
             }
         }
         .formStyle(.grouped)

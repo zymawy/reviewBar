@@ -17,7 +17,7 @@ final class StatusItemController: NSObject {
     // MARK: - Icon State
     
     private var isAnimating = false
-    private var animationTimer: Timer?
+    private var animationTask: Task<Void, Never>?
     private var animationFrame = 0
     
     // MARK: - Init
@@ -32,7 +32,7 @@ final class StatusItemController: NSObject {
     }
     
     deinit {
-        animationTimer?.invalidate()
+        animationTask?.cancel()
     }
     
     // MARK: - Setup
@@ -191,18 +191,22 @@ final class StatusItemController: NSObject {
         isAnimating = true
         animationFrame = 0
         
-        animationTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            Task { @MainActor in
-                self?.animationFrame = (self?.animationFrame ?? 0 + 1) % 12
-                self?.updateIcon()
+        animationTask?.cancel()
+        animationTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 100_000_000) // 0.1s
+                guard !Task.isCancelled else { return }
+                
+                self.animationFrame = (self.animationFrame + 1) % 12
+                self.updateIcon()
             }
         }
     }
     
     private func stopAnimation() {
         isAnimating = false
-        animationTimer?.invalidate()
-        animationTimer = nil
+        animationTask?.cancel()
+        animationTask = nil
         animationFrame = 0
         updateIcon()
     }

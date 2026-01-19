@@ -64,8 +64,9 @@ public actor GitHubProvider: GitProvider {
             throw GitProviderError.notAuthenticated
         }
         
-        // Search for PRs where user is requested reviewer
-        let query = "is:pr is:open review-requested:@me"
+        // Search for PRs that involve the user (reviewer, assignee, mentions)
+        // but are NOT authored by the user
+        let query = "is:pr is:open involves:@me -author:@me"
         var components = URLComponents(url: baseURL.appendingPathComponent("search/issues"), resolvingAgainstBaseURL: true)!
         components.queryItems = [
             URLQueryItem(name: "q", value: query),
@@ -74,9 +75,16 @@ public actor GitHubProvider: GitProvider {
             URLQueryItem(name: "per_page", value: "50")
         ]
         
-        let (data, _) = try await request(components.url!)
+        print("ReviewBar: Searching GitHub with query: \(query)")
+        
+        let (data, response) = try await request(components.url!)
+        
+        if let httpResponse = response as? HTTPURLResponse {
+            print("ReviewBar: GitHub Search Status: \(httpResponse.statusCode)")
+        }
         
         let searchResult = try decoder.decode(GitHubSearchResult.self, from: data)
+        print("ReviewBar: GitHub Search found \(searchResult.items.count) items")
         
         return searchResult.items.map { item in
             // Parse repository from URL

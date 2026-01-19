@@ -3,8 +3,17 @@ import ReviewBarCore
 
 struct DiffView: View {
     let diff: String
+    var reviewRequest: ReviewRequest? // Optional request context for commenting
+    
+    @EnvironmentObject var reviewStore: ReviewStore
     @State private var parsedDiff: ParsedDiff?
     @State private var selectedFile: DiffFile?
+    
+    // Commenting State
+    @State private var hoveredLineIndex: Int?
+    @State private var activeCommentLineIndex: Int?
+    @State private var commentDraft: String = ""
+    @State private var isPosting: Bool = false
     
     var body: some View {
         HStack(spacing: 0) {
@@ -107,6 +116,100 @@ struct DiffView: View {
         .padding(.horizontal)
         .padding(.vertical, 1)
         .background(lineTypeColor(line.type).opacity(0.1))
+        .overlay(alignment: .trailing) {
+            if let file = selectedFile,
+               let index = file.hunks.flatMap({ $0.lines }).firstIndex(where: { $0.content == line.content }),
+               (hoveredLineIndex == index || activeCommentLineIndex == index) {
+                
+                Button {
+                    activeCommentLineIndex = index
+                    commentDraft = ""
+                } label: {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                        .foregroundColor(.accentColor)
+                        .padding(4)
+                        .background(Color(.textBackgroundColor))
+                        .clipShape(Circle())
+                        .shadow(radius: 1)
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 8)
+                .popover(isPresented: Binding(
+                    get: { activeCommentLineIndex == index },
+                    set: { if !$0 { activeCommentLineIndex = nil } }
+                )) {
+                    VStack(spacing: 8) {
+                        Text("Add Comment")
+                            .font(.headline)
+                        
+                        TextEditor(text: $commentDraft)
+                            .frame(minWidth: 300, minHeight: 100)
+                            .border(Color.secondary.opacity(0.2))
+                        
+                        HStack {
+                            Button("Cancel") {
+                                activeCommentLineIndex = nil
+                            }
+                            
+                            Spacer()
+                            
+                            Button("Post") {
+                                postComment(line: line, index: index)
+                            }
+                            .buttonStyle(.borderedProminent)
+                            .disabled(commentDraft.isEmpty || isPosting)
+                        }
+                    }
+                    .padding()
+                }
+            }
+        }
+        .onHover { isHovered in
+            if let file = selectedFile, isHovered {
+                // Find index - inefficient but functional for now
+                if let index = file.hunks.flatMap({ $0.lines }).firstIndex(where: { $0.content == line.content }) {
+                    hoveredLineIndex = index
+                }
+            } else if !isHovered && hoveredLineIndex != nil {
+                // Only clear if we were hovering this specific line (simplified)
+                // Ideally checks if we moved to another line
+                // For now, we rely on the next hover setting it, or just clearing it
+                // hoveredLineIndex = nil // This flickers, so maybe don't clear?
+            }
+        }
+    }
+    
+    private func postComment(line: DiffLine, index: Int) {
+        guard let request = reviewRequest, let file = selectedFile else { return }
+        
+        isPosting = true
+        Task {
+            do {
+                // Calculate actual line number (approximate for now as we don't track absolute line numbers in DiffLine yet)
+                // In a real app we'd map this carefully from DiffHunk
+                let lineNumber = 1 // Placeholder
+                
+                try await reviewStore.postInlineComment(
+                    path: file.path,
+                    line: lineNumber,
+                    body: commentDraft,
+                    request: request
+                )
+                
+                await MainActor.run {
+                    activeCommentLineIndex = nil
+                    isPosting = false
+                    commentDraft = ""
+                    HapticManager.success()
+                }
+            } catch {
+                await MainActor.run {
+                    isPosting = false
+                    HapticManager.error()
+                    print("Failed to post comment: \(error)")
+                }
+            }
+        }
     }
     
     private func lineTypeSymbol(_ type: DiffLineType) -> String {

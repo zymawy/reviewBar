@@ -80,8 +80,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         if settingsStore.enabledProviders.contains(.gitHub),
            let token = settingsStore.gitHubToken, !token.isEmpty {
+            print("ReviewBar: GitHub provider enabled with token")
             let github = GitHubProvider(token: token)
             gitProviders.append(github)
+        } else {
+            print("ReviewBar: GitHub provider NOT configured - enabled: \(settingsStore.enabledProviders.contains(.gitHub)), hasToken: \(settingsStore.gitHubToken != nil && !(settingsStore.gitHubToken?.isEmpty ?? true))")
         }
         
         if settingsStore.enabledProviders.contains(.gitLab),

@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import ServiceManagement
+import ReviewBarCore
 
 /// Persistent settings store using UserDefaults with ObservableObject for SwiftUI reactivity
 @MainActor
@@ -32,6 +33,7 @@ public final class SettingsStore: ObservableObject {
         static let defaultProfileID = "defaultProfileID"
         
         static let watchedRepositories = "watchedRepositories"
+        static let customProfiles = "customProfiles"
     }
     
     private let defaults: UserDefaults
@@ -124,6 +126,11 @@ public final class SettingsStore: ObservableObject {
     // Note: Tokens should be stored in Keychain in production
     public var gitHubToken: String? {
         didSet {
+            let trimmed = gitHubToken?.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed != gitHubToken {
+                gitHubToken = trimmed
+                return
+            }
             defaults.set(gitHubToken, forKey: Keys.gitHubToken)
             notifyChange()
         }
@@ -198,11 +205,35 @@ public final class SettingsStore: ObservableObject {
         }
     }
     
+    public var customProfiles: [ReviewProfile] = [] {
+        didSet {
+            if let data = try? JSONEncoder().encode(customProfiles) {
+                defaults.set(data, forKey: Keys.customProfiles)
+                notifyChange()
+            }
+        }
+    }
+    
     public var watchedRepositories: [String] = [] {
         didSet {
             defaults.set(watchedRepositories, forKey: Keys.watchedRepositories)
             notifyChange()
         }
+    }
+    
+    public var allProfiles: [ReviewProfile] {
+        return [
+            ReviewProfile.standard,
+            ReviewProfile.security,
+            ReviewProfile.performance
+        ] + customProfiles
+    }
+    
+    public var defaultProfile: ReviewProfile {
+        if let id = defaultProfileID, let profile = allProfiles.first(where: { $0.id == id }) {
+            return profile
+        }
+        return .standard
     }
     
     // MARK: - Computed Properties
@@ -264,6 +295,11 @@ public final class SettingsStore: ObservableObject {
         autoReviewOnAssign = defaults.bool(forKey: Keys.autoReviewOnAssign)
         if let profileIDString = defaults.string(forKey: Keys.defaultProfileID) {
             defaultProfileID = UUID(uuidString: profileIDString)
+        }
+        
+        if let data = defaults.data(forKey: Keys.customProfiles),
+           let profiles = try? JSONDecoder().decode([ReviewProfile].self, from: data) {
+            customProfiles = profiles
         }
         
         watchedRepositories = defaults.stringArray(forKey: Keys.watchedRepositories) ?? []

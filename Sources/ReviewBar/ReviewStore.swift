@@ -14,6 +14,8 @@ public final class ReviewStore: ObservableObject {
     @Published public private(set) var currentlyReviewing: ReviewRequest?
     @Published public private(set) var lastRefresh: Date?
     @Published public private(set) var lastError: Error?
+    @Published public private(set) var lastLogMessage: String?
+    
     
     /// Selected review IDs for batch operations
     @Published public var selectedReviewIds: Set<String> = []
@@ -42,6 +44,12 @@ public final class ReviewStore: ObservableObject {
         let entry = LogEntry(timestamp: Date(), message: message, level: level)
         activityLog.insert(entry, at: 0)
         if activityLog.count > 100 { activityLog.removeLast() }
+        
+        // Update live ticker for info/success/warning
+        if level != .error {
+            lastLogMessage = message
+        }
+        
         print("[\(level.rawValue)] \(message)")
     }
     
@@ -72,15 +80,23 @@ public final class ReviewStore: ObservableObject {
         self.gitProviders = gitProviders
         self.reviewAnalyzer = reviewAnalyzer
         self.useCLIProvider = useCLI
+        
+        log("Configured with \(gitProviders.count) provider(s)", level: .info)
+        for provider in gitProviders {
+            log("  Active: \(provider.displayName)", level: .info)
+        }
     }
     
     // MARK: - Refresh
     
     public func refresh() async {
         guard !gitProviders.isEmpty else {
+            log("No providers configured - cannot refresh", level: .warning)
             print("ReviewStore: No providers configured")
             return
         }
+        
+        log("Refreshing from \(gitProviders.count) provider(s)...", level: .info)
         
         lastError = nil
         
@@ -88,7 +104,9 @@ public final class ReviewStore: ObservableObject {
             var allRequests: [ReviewRequest] = []
             
             for provider in gitProviders {
+                log("Fetching from \(provider.displayName)...", level: .info)
                 let requests = try await provider.fetchReviewRequests()
+                log("  \(provider.displayName) returned \(requests.count) item(s)", level: .info)
                 allRequests.append(contentsOf: requests)
             }
             
@@ -98,12 +116,15 @@ public final class ReviewStore: ObservableObject {
             pendingReviews = allRequests
             lastRefresh = Date()
             
+            log("Found \(allRequests.count) pending review(s)", level: allRequests.isEmpty ? .warning : .success)
+            
             // Clear selection if it's no longer valid
             let validIds = Set(pendingReviews.map { $0.id })
             selectedReviewIds = selectedReviewIds.intersection(validIds)
             
         } catch {
             lastError = error
+            log("Refresh failed: \(error.localizedDescription)", level: .error)
             print("ReviewStore: Refresh failed: \(error)")
         }
     }
@@ -114,7 +135,7 @@ public final class ReviewStore: ObservableObject {
     
     // MARK: - Review Operations
     
-    public func startReview(_ request: ReviewRequest) async -> ReviewResult? {
+    public func startReview(_ request: ReviewRequest, profile: ReviewProfile? = nil) async -> ReviewResult? {
         guard let analyzer = reviewAnalyzer else {
             lastError = ReviewError.notConfigured
             return nil
@@ -189,10 +210,14 @@ public final class ReviewStore: ObservableObject {
             // Analyze
             statusMessage = "🤖 AI is analyzing code..."
             log("Sending to AI for analysis...")
+            if let p = profile {
+                log("Using profile: \(p.name)")
+            }
+            
             let result = try await analyzer.analyze(
                 pullRequest: pullRequest,
                 diffText: diff,
-                profile: nil,
+                profile: profile, 
                 workingDirectory: clonedDir
             )
             log("Review complete! Found \(result.issues.count) issues", level: .success)
@@ -328,6 +353,49 @@ public final class ReviewStore: ObservableObject {
         
         // 5. Submit
         try await provider.submitReview(pr: pr, review: submission)
+    }
+    
+    public func postInlineComment(path: String, line: Int, body: String, request: ReviewRequest) async throws {
+        guard let provider = gitProviders.first(where: { $0.id == request.providerID }) else {
+            throw ReviewError.notConfigured
+        }
+        
+        let repoParts = request.repository.fullName.split(separator: "/")
+        guard repoParts.count == 2 else { throw ReviewError.analysisFailure("Invalid repo name") }
+        
+        let repo = Repository(
+            owner: String(repoParts[0]),
+            name: String(repoParts[1])
+        )
+        
+        let pr = PullRequest(
+            id: request.pullRequestID,
+            number: request.number,
+            title: request.title,
+            body: nil,
+            state: .open,
+            author: request.author,
+            repository: repo,
+            baseBranch: "",
+            headBranch: "",
+            createdAt: request.createdAt,
+            updatedAt: Date(),
+            additions: 0,
+            deletions: 0,
+            changedFiles: 0,
+            isDraft: false,
+            labels: [],
+            url: URL(string: "https://github.com")! // Placeholder
+        )
+        
+        let comment = ReviewComment(
+            body: body,
+            path: path,
+            line: line,
+            side: .right
+        )
+        
+        try await provider.postComment(pr: pr, comment: comment)
     }
     
     public func cancelReview() {
